@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # setup
-DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y docker.io git python-virtualenv libyaml-dev
+DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io git python-virtualenv
 TEST_DIR=/testdir/
 mkdir $TEST_DIR
 cd $TEST_DIR
@@ -27,5 +27,5 @@ git clone https://github.com/httpPrincess/meta-integration.git
 cd meta-integration
 export COMPOSE_CLIENT_VERSION=1.12
 docker-compose pull
-docker-compose start messaging db autho messaging updater
+docker-compose start messaging db autho updater
 docker-compose ps >> /tmp/log.txt
