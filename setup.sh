@@ -33,6 +33,4 @@ cd $TEST_DIR/meta-integration
 export COMPOSE_CLIENT_VERSION=1.12
 docker-compose pull
 docker-compose up
-docker-compose start messaging db autho updater worker
 docker-compose ps >> /tmp/log.txt
-docker-compose run facade python /app/client.py

@@ -1,9 +1,6 @@
 #!/bin/bash
 
 # cleanup
-deactivate
-TEST_DIR=/testdir/
-rm -rf $TEST_DIR
 echo 'Killing instances'
 for i in `docker ps --all | awk '{print $1}'` ; do docker kill $i; docker rm $i; done
 

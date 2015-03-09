@@ -39,3 +39,6 @@ facade:
     - autho
     - messaging
     - updater
+   command:
+    - python /app/client.py
+
