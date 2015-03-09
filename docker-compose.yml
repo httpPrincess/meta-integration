@@ -23,6 +23,15 @@ worker:
     - db                                                                                                                                                                                                                                                                       
     - messaging                                                                                                                                                                                                                                                                
 #  command: /app/run.py
+worker2:
+  image: benedicere/metahosting-dummyworker
+  links:
+    - db
+    - messaging
+  environment:
+    - DB_LOCAL_COLLECTION=dummy2-local-instances
+    - WORKER_NAME=dummy2
+    - WORKER_DESCRIPTION=dummyworkerdd
 facade:
    image: facade
    links:
