@@ -21,17 +21,18 @@ cp ../meta-integration/client.py ./client.py
 docker build --rm=true --no-cache=true -t facade . >> /tmp/log.txt
 
 # get worker
+# we skip it for now since a dummy worker is provided as an image
 cd $TEST_DIR
 git clone https://github.com/BeneDicere/metahosting-worker.git
-cd metahosting-worker
+#cd metahosting-worker
 # we mix all in one environment
-pip install -r requirements.txt
+#pip install -r requirements.txt
 
 # integration starts
 cd $TEST_DIR/meta-integration
 export COMPOSE_CLIENT_VERSION=1.12
 docker-compose pull
 docker-compose up
-docker-compose start messaging db autho updater
+docker-compose start messaging db autho updater worker
 docker-compose ps >> /tmp/log.txt
 docker-compose run facade python /app/client.py

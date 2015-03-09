@@ -17,11 +17,11 @@ updater:
   links:
     - db
     - messaging
-#worker:
-#  image: dummyworker 
-#  links:
-#    - messaging
-#    - db
+worker:                                                                                                                                                                                                                                                                        
+  image: benedicere/metahosting-dummyworker                                                                                                                                                                                                                                    
+  links:                                                                                                                                                                                                                                                                       
+    - db                                                                                                                                                                                                                                                                       
+    - messaging                                                                                                                                                                                                                                                                
 #  command: /app/run.py
 facade:
    image: facade
