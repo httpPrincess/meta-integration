@@ -19,7 +19,7 @@ def incoming_notification():
 
 @app.route('/logs/', methods=['GET'])
 def get_logs():
-    log_list = ['fdsaa', 'foo', 'bar']
+    log_list = os.listdir(app.config['UPLOAD_FOLDER'])
     return '%s' % log_list, 200
 
 
