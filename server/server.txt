@@ -1,0 +1,7 @@
+#!/bin/bash
+wget -O - https://raw.githubusercontent.com/httpPrincess/meta-integration/master/setup.sh | bash
+nova boot --flavor l8 --image c18c14ff-bb66-4fc2-9085-f08b7c2efe66 --key-name jj --availability-zone rack86:zam1205  --user-data mysk.sh firss
+nova console-log 6615cbc6-9d39-417a-b5c9-bd84ba136d15 
+nova stop
+
+
