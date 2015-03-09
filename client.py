@@ -11,6 +11,7 @@ def print_instance_status(f):
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+sleep(10)
 logging.info('Starting tests')
 
 logging.info('Getting types')
