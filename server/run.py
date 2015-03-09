@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-
-from flask import Flask, request
+import os
+from flask import Flask, request, jsonify, send_from_directory, Response
+from werkzeug import secure_filename
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = '/tmp/uploads/'
+
 
 @app.route('/hooker/', methods=['POST'])
 def incoming_notification():
@@ -14,5 +17,31 @@ def incoming_notification():
     return 'Ok'
 
 
-if __name__=='__main__':
+@app.route('/logs/', methods=['GET'])
+def get_logs():
+    log_list = ['fdsaa', 'foo', 'bar']
+    return '%s' % log_list, 200
+
+
+# curl --form file=@file.log -u uploader:0x0aa localhost:7000/logs/
+@app.route('/logs/', methods=['POST'])
+def log_uploader():
+    auth = request.authorization
+    if auth is None or auth.username != 'uploader' or auth.password != '0x0aa':
+        return Response('Wrong credentials', 401,
+            {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+    uploaded_file = request.files['file']
+    filename = secure_filename(uploaded_file.filename)
+    uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return 'Saved as %s' % filename
+
+
+@app.route('/logs/<log_id>', methods=['GET'])
+def get_log(log_id):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               log_id)
+
+
+if __name__ == '__main__':
     app.run(port=7000, debug=True)
