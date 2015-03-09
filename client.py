@@ -1,4 +1,5 @@
 from facade import get_facade
+from time import sleep
 
 def print_instance_status(f):
 # check instance status:
