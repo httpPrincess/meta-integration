@@ -18,7 +18,7 @@ f = get_facade()
 f.get_types()
 assert len(f.get_types())>0
 
-logging.info('Checking instances creation'):
+logging.info('Checking instances creation')
 for type_name in f.get_types():
     res = f.create_instance(type_name, 1)
     assert res is not None
@@ -33,6 +33,9 @@ for i in range(1,10):
 
 logging.info('Test killing')  
 for instance_id, instance in f.get_all_instances(1).iteritems():
-  print 'Killing %s' % instance_id
+  logging.info('Killing %s', instance_id)
   f.delete_instance(instance_id, 1)
 
+sleep(5)
+res = f.get_all_instances(1)
+assert len(res)==0
