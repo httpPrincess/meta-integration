@@ -2,7 +2,7 @@
 import os
 from flask import Flask, request, send_from_directory, Response
 from werkzeug import secure_filename
-from subprocess import call, PIPE, Popen
+from subprocess import PIPE, Popen
 import json
 
 app = Flask(__name__)
@@ -40,9 +40,7 @@ def log_uploader():
         return Response('Wrong credentials', 401,
                         {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
-    uploaded_file = request.files['file']
-    json_object = json.loads(uploaded_file.read())
-    instance_id = json_object['uuid']
+    instance_id = get_instance_id(request.files['file'])
     log = execute_nova_command(['console-log', instance_id])
     if log:
         save_log(log, instance_id)
@@ -62,11 +60,6 @@ def save_log(log, instance_id):
     with open(filename, 'w+') as logfile:
         logfile.write(log)
 
-
-def kill_instance(instance_id):
-    execute_nova_command(['stop', instance_id])
-
-
 def execute_nova_command(command):
     process = Popen(creds + command, stdout=PIPE)
     out, err = process.communicate()
@@ -75,7 +68,18 @@ def execute_nova_command(command):
     return out
 
 
+def get_instance_id(uploaded_file):
+    json_object = json.loads(uploaded_file.read())
+    return json_object['uuid']
+
+
 if __name__ == '__main__':
-    value = open('./creds.dat').read()
-    creds = json.loads(value)
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        app.logger.info('Creating upload folder')
+        os.mkdir(app.config['UPLOAD_FOLDER'])
+
+    with open('./creds.dat') as f:
+        app.logger.info('Loading nova credentials')
+        creds = json.loads(f.read())
+
     app.run(port=7000, debug=True)
