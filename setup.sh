@@ -18,7 +18,7 @@ cd $TEST_DIR
 git clone https://github.com/httpPrincess/metahosting.git
 cd metahosting
 cp ../meta-integration/client.py ./client.py
-docker build --rm=true --no-cache=true -t facade . >> /tmp/log.txt
+docker build --rm=true --no-cache=true -t facade .
 
 # get worker
 # we skip it for now since a dummy worker is provided as an image
@@ -33,4 +33,4 @@ cd $TEST_DIR/meta-integration
 export COMPOSE_CLIENT_VERSION=1.12
 docker-compose pull
 docker-compose up
-docker-compose ps >> /tmp/log.txt
+docker-compose ps
