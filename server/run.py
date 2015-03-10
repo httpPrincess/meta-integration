@@ -46,11 +46,11 @@ def log_uploader():
                         {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
     instance_id = get_instance_id(request.files['file'])
-    log = execute_nova_command([__GET_CONSOLE_COMMAND__, instance_id])
+    log = execute_nova_command(__GET_CONSOLE_COMMAND__+[instance_id])
     if log:
         save_log(log, instance_id)
 
-    execute_nova_command([__STOP_COMMAND__, instance_id])
+    execute_nova_command(__STOP_COMMAND__+[instance_id])
     return 'Thanks and now die'
 
 @app.route('/logs/<log_id>', methods=['GET'])
