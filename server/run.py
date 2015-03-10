@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
-from flask import Flask, request, send_from_directory, Response
+from flask import Flask, request, send_from_directory, Response, safe_join, \
+    render_template
 from werkzeug import secure_filename
 from subprocess import PIPE, Popen
 import json
@@ -35,7 +36,7 @@ def incoming_notification():
 @app.route('/logs/', methods=['GET'])
 def get_logs():
     log_list = os.listdir(app.config['UPLOAD_FOLDER'])
-    return '%s' % log_list, 200
+    return render_template('logs.html', logs=log_list)
 
 
 @app.route('/logs/', methods=['POST'])
@@ -55,8 +56,11 @@ def log_uploader():
 
 @app.route('/logs/<log_id>', methods=['GET'])
 def get_log(log_id):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               log_id)
+
+    filename = safe_join(app.config['UPLOAD_FOLDER'], log_id)
+    with open(filename, 'rb') as fd:
+        content = fd.read()
+    return render_template('log.html', instance_id=log_id, content=content)
 
 
 def save_log(log, instance_id):
