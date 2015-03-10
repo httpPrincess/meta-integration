@@ -60,10 +60,11 @@ def save_log(log, instance_id):
     with open(filename, 'w+') as logfile:
         logfile.write(log)
 
+
 def execute_nova_command(command):
     process = Popen(creds + command, stdout=PIPE)
     out, err = process.communicate()
-    if err != 0:
+    if err:
         app.logger.error('Unable to execute nova command %s', command)
     return out
 
@@ -82,4 +83,4 @@ if __name__ == '__main__':
         app.logger.info('Loading nova credentials')
         creds = json.loads(f.read())
 
-    app.run(port=7000, debug=True)
+    app.run(host='0.0.0.0', port=7000, debug=True)
