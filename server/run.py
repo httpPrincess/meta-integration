@@ -8,9 +8,14 @@ import json
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads/'
 
-__BOOT_COMMAND__ = [u'boot', u'--flavor', u'l8', u'--image',
-                    u'c18c14ff-bb66-4fc2-9085-f08b7c2efe66', u'--user-data',
-                    u'mysk.sh']
+__BOOT_COMMAND__ = ['boot',
+                    '--flavor', 'l8',
+                    '--image', 'c18c14ff-bb66-4fc2-9085-f08b7c2efe66',
+                    '--user-data', 'mysk.sh']
+
+__STOP_COMMAND__ = ['delete']
+__GET_CONSOLE_COMMAND__ = ['console-log']
+
 creds = []
 
 
@@ -41,11 +46,11 @@ def log_uploader():
                         {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
     instance_id = get_instance_id(request.files['file'])
-    log = execute_nova_command(['console-log', instance_id])
+    log = execute_nova_command([__GET_CONSOLE_COMMAND__, instance_id])
     if log:
         save_log(log, instance_id)
 
-    execute_nova_command(['stop', instance_id])
+    execute_nova_command([__STOP_COMMAND__, instance_id])
     return 'Thanks and now die'
 
 @app.route('/logs/<log_id>', methods=['GET'])
@@ -55,8 +60,8 @@ def get_log(log_id):
 
 
 def save_log(log, instance_id):
-    filename = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(
-        instance_id))
+    filename = os.path.join(app.config['UPLOAD_FOLDER'],
+                            secure_filename(instance_id))
     with open(filename, 'w+') as logfile:
         logfile.write(log)
 
