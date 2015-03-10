@@ -65,7 +65,8 @@ def execute_nova_command(command):
     process = Popen(creds + command, stdout=PIPE)
     out, err = process.communicate()
     if err:
-        app.logger.error('Unable to execute nova command %s', command)
+        app.logger.error('Unable to execute nova command %s [error=%s] %s',
+                         command, err, out)
     return out
 
 
