@@ -9,40 +9,40 @@ import hashlib
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads/'
+app.config['INSTANCE_SCRIPT_NAME'] = 'mysk.sh'
+app.config['NOVA_CREDENTIALS_FILE'] = 'creds.dat'
+app.config.from_envvar('COOPER_SETTINGS', silent=True)
 
 __BOOT_COMMAND__ = ['boot',
                     '--flavor', 'l8',
                     '--image', 'c18c14ff-bb66-4fc2-9085-f08b7c2efe66',
-                    '--user-data', 'mysk.sh']
+                    '--user-data', app.config['INSTANCE_SCRIPT_NAME']]
 
 __STOP_COMMAND__ = ['delete']
 __GET_CONSOLE_COMMAND__ = ['console-log']
 
-creds = []
+credentials = []
 
 
 @app.route('/hooker/', methods=['POST'])
 def incoming_notification():
     event = request.headers['X-Github-Event']
     signature = request.headers['X-Hub-Signature']
-    res = verify_signature(signature, request.data)
-    if not res:
+    if not verify_signature(signature, request.data):
         return 'Signature verification failed!'
+
+    if event == 'ping':
+        return 'pong'
 
     if event == 'push':
         info = request.get_json()
-        try:
-            sha_of_head = info['head_commit']['id']
-        except TypeError:
-            sha_of_head = 'Unknown'
+        sha_of_head = info['head_commit']['id']
 
         execute_nova_command(
             __BOOT_COMMAND__ + ['testing_%s' % sha_of_head])
         return 'Ok. Integration testing started'
-    if event == 'ping':
-        return 'pong'
-    else:
-        return 'Unknown event %s' % event
+
+    return 'Unknown event %s' % event
 
 
 @app.route('/logs/', methods=['GET'])
@@ -83,7 +83,7 @@ def save_log(log, instance_id):
 
 
 def execute_nova_command(command):
-    process = Popen(creds + command, stdout=PIPE)
+    process = Popen(credentials + command, stdout=PIPE)
     out, err = process.communicate()
     if err:
         app.logger.error('Unable to execute nova command %s [error=%s] %s',
@@ -100,9 +100,13 @@ def verify_signature(signature, data):
     alg, sig = signature.split("=")
     if alg != 'sha1':
         return False
-    mac = hmac.new(os.environ['GITHUB_SECRET'], msg=data,
+    if 'GITHUB_SECRET' not in os.environ:
+        app.logger.error('No GitHub hook secret found in environment')
+        return False
+
+    mac = hmac.new(os.environ['GITHUB_SECRET'],
+                   msg=data,
                    digestmod=hashlib.sha1)
-    # ignore timing attacks for the moment
     return sig == mac.hexdigest()
 
 
@@ -111,8 +115,17 @@ if __name__ == '__main__':
         app.logger.info('Creating upload folder')
         os.mkdir(app.config['UPLOAD_FOLDER'])
 
-    with open('./creds.dat') as f:
-        app.logger.info('Loading nova credentials')
-        creds = json.loads(f.read())
+    if not os.path.exists(app.config['INSTANCE_SCRIPT_NAME']):
+        app.logger.error('Please provide instance initialization script %s',
+                         app.config['INSTANCE_SCRIPT_NAME'])
+        exit(-1)
+
+    if not os.path.exists(app.config['NOVA_CREDENTIALS_FILE']):
+        app.logger.error('Please provide nova credentials file %s',
+                         app.config['NOVA_CREDENTIALS_FILE'])
+        exit(-1)
+
+    with open(app.config['NOVA_CREDENTIALS_FILE']) as f:
+        credentials = json.loads(f.read())
 
     app.run(host='0.0.0.0', port=7000, debug=True)
