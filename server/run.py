@@ -39,7 +39,7 @@ def incoming_notification():
 
         out = execute_nova_command(
             __BOOT_COMMAND__ + ['testing_%s' % sha_of_head])
-        instance_id = extract_instance_id(out) | 'None'
+        instance_id = extract_instance_id(out) or 'None'
         save_log('Tests are running', instance_id)
         return 'Ok. Integration testing started'
 
@@ -124,9 +124,6 @@ def verify_signature(signature, data):
     alg, sig = signature.split("=")
     if alg != 'sha1':
         return False
-    if 'GITHUB_SECRET' not in os.environ:
-        app.logger.error('No GitHub hook secret found in environment')
-        return False
 
     mac = hmac.new(os.environ['GITHUB_SECRET'],
                    msg=data,
@@ -142,6 +139,10 @@ if __name__ == '__main__':
     if not os.path.exists(app.config['INSTANCE_SCRIPT_NAME']):
         app.logger.error('Please provide instance initialization script %s',
                          app.config['INSTANCE_SCRIPT_NAME'])
+        exit(-1)
+
+    if 'GITHUB_SECRET' not in os.environ:
+        app.logger.error('No GitHub hook secret found in environment')
         exit(-1)
 
     if not os.path.exists(app.config['NOVA_CREDENTIALS_FILE']):
