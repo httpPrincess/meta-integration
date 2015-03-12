@@ -2,10 +2,12 @@
 import hmac
 import os
 from flask import Flask, request, Response, safe_join, render_template
+from babel import dates
 from werkzeug import secure_filename
 from subprocess import PIPE, Popen
 import json
 import hashlib
+from pytz import timezone
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads/'
@@ -47,7 +49,13 @@ def incoming_notification():
 
 @app.route('/logs/', methods=['GET'])
 def get_logs():
-    log_list = os.listdir(app.config['UPLOAD_FOLDER'])
+    dir = app.config['UPLOAD_FOLDER']
+    log_list = []
+    for file_name in os.listdir(dir):
+        log_list.append(
+            {"name": file_name,
+             "ts": os.stat(os.path.join(dir, file_name)).st_mtime}
+        )
     return render_template('logs.html', logs=log_list)
 
 
@@ -73,6 +81,14 @@ def get_log(log_id):
     with open(filename, 'rb') as fd:
         content = fd.read()
     return render_template('log.html', instance_id=log_id, content=content)
+
+
+@app.template_filter('datetime')
+def format_datetime(value):
+    return dates.format_datetime(value,
+                                 format='H:mm dd/MM/yy',
+                                 locale='en_US',
+                                 tzinfo=timezone('Europe/Berlin'))
 
 
 def save_log(log, instance_id):

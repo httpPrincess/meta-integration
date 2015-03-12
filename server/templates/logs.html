@@ -6,8 +6,12 @@
 </head>
 <body>
 <h1>Logs</h1>
-{% for log in logs %}
-  <li><a href="{{ log}}">{{ log|e }}</a></li>
+<table>
+    <thead align="center"><td>UID</td><td>Created</td></thead>
+{% for record in logs|sort(reverse=True, attribute='ts') %}
+  <tr><td><a href="{{ record.name }}">{{ record.name|e }}</a></td><td>{{
+      record.ts|datetime }}</td></tr>
 {% endfor %}
+</table>
 </body>
 </html>
