@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-import hmac
-import os
-from flask import Flask, request, Response, safe_join, render_template
 from babel import dates
-from werkzeug import secure_filename
-from subprocess import PIPE, Popen
-import json
+from flask import Flask, request, Response, safe_join, render_template
 import hashlib
+import hmac
+import json
+import os
 from pytz import timezone
+from subprocess import PIPE, Popen
+from werkzeug import secure_filename
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads/'
@@ -33,18 +33,17 @@ def incoming_notification():
     if not verify_signature(signature, request.data):
         return 'Signature verification failed!'
 
-    if event == 'ping':
-        return 'pong'
-
     if event == 'push':
         info = request.get_json()
         sha_of_head = info['head_commit']['id']
 
-        execute_nova_command(
+        out = execute_nova_command(
             __BOOT_COMMAND__ + ['testing_%s' % sha_of_head])
+        instance_id = extract_instance_id(out) | 'None'
+        save_log('Tests are running', instance_id)
         return 'Ok. Integration testing started'
 
-    return 'Unknown event %s' % event
+    return 'Ignoring event %s' % event
 
 
 @app.route('/logs/', methods=['GET'])
@@ -111,6 +110,15 @@ def get_instance_id(uploaded_file):
     json_object = json.loads(uploaded_file.read())
     return json_object['uuid']
 
+
+def extract_instance_id(out):
+    for line in out.splitlines():
+        spp = line.split('|')
+        if len(spp) < 3:
+            continue
+        if spp[1].strip().startswith('id'):
+            return spp[2].strip()
+    return None
 
 def verify_signature(signature, data):
     alg, sig = signature.split("=")
