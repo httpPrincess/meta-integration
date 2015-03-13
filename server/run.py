@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import json
 import os
-from pip._vendor import requests
+import requests
 from pytz import timezone
 from subprocess import PIPE, Popen
 from werkzeug import secure_filename
