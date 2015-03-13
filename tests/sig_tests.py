@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import os
 import unittest
 from server.run import verify_signature
@@ -19,6 +20,10 @@ class SigTests(unittest.TestCase):
         request.headers = {'X-Hub-Signature': 'sha1=%s' % mac.hexdigest()}
         self.gihub_request = request
 
+        # docker-hub:
+        with open('./example-docker-hook.json') as f:
+            self.docker_hook = json.load(f)
+
     def tearDown(self):
         pass
 
@@ -30,3 +35,8 @@ class SigTests(unittest.TestCase):
         os.environ['GITHUB_SECRET'] = self.secret
         result = verify_signature(self.gihub_request)
         self.assertTrue(result)
+
+    def test_url_extraction(self):
+        callback_url = self.docker_hook['callback_url']
+        self.assertIsNotNone(callback_url)
+        print callback_url

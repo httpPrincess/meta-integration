@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 import os
+from pip._vendor import requests
 from pytz import timezone
 from subprocess import PIPE, Popen
 from werkzeug import secure_filename
@@ -56,6 +57,8 @@ def incoming_docker_notification():
 
     pushed_at = info['push_data']['pushed_at']
     start_testing(instance_name=pushed_at)
+    callback_url = info['callback_url']
+    resp = requests.post(callback_url, json={'status': 'testing_started'})
     return 'Ok. Integration testing started'
 
 

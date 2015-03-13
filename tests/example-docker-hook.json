@@ -1,0 +1,29 @@
+{
+    "callback_url": "https://registry.hub.docker.com/u/benedicere/metahosting-dummyworker/hook/24ehg0db4ic5i42hfejg35fha30jd0c31/",
+    "push_data": {
+        "images": [
+            "imagehash1",
+            "imagehash2",
+            "imagehash3"
+        ],
+        "pushed_at": 1426241153,
+        "pusher": "benedicere"
+    },
+    "repository": {
+        "comment_count": 0,
+        "date_created": 1425652736,
+        "description": "",
+        "dockerfile": "FROM debian:wheezy\nMAINTAINER BeneDicere\nRUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install wget python python-pip -y && \\\n   apt-get clean autoclean && apt-get autoremove && \\\n   rm -rf /var/lib/{apt,dpkg,cache,log}\nRUN mkdir /app\nADD . /app/\nWORKDIR /app\nRUN pip install -r requirements.txt\nCMD /app/run.py --config config.ini",
+        "full_description": "metahosting-worker\n==================\n",
+        "is_official": false,
+        "is_private": false,
+        "is_trusted": true,
+        "name": "metahosting-dummyworker",
+        "namespace": "benedicere",
+        "owner": "benedicere",
+        "repo_name": "benedicere/metahosting-dummyworker",
+        "repo_url": "https://registry.hub.docker.com/u/benedicere/metahosting-dummyworker/",
+        "star_count": 0,
+        "status": "Active"
+    }
+}
