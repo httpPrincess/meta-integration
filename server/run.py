@@ -58,8 +58,9 @@ def incoming_docker_notification():
     pushed_at = info['push_data']['pushed_at']
     start_testing(instance_name=pushed_at)
     callback_url = info['callback_url']
-    resp = requests.post(callback_url, json=jsonify(
-        resp={'status': 'testing_started'}))
+    resp = requests.post(callback_url,
+                         json=jsonify(resp={'status': 'testing_started'}),
+                         verify=False)
     return 'Ok. Integration testing started %s' % resp
 
 
