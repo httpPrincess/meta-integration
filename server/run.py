@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from babel import dates
-from flask import Flask, request, Response, safe_join, render_template
+from flask import Flask, request, Response, safe_join, render_template, jsonify
 import hashlib
 import hmac
 import json
@@ -58,8 +58,9 @@ def incoming_docker_notification():
     pushed_at = info['push_data']['pushed_at']
     start_testing(instance_name=pushed_at)
     callback_url = info['callback_url']
-    resp = requests.post(callback_url, json={'status': 'testing_started'})
-    return 'Ok. Integration testing started'
+    resp = requests.post(callback_url, json=jsonify(
+        resp={'status': 'testing_started'}))
+    return 'Ok. Integration testing started %s' % resp
 
 
 @app.route('/logs/', methods=['GET'])
