@@ -26,24 +26,37 @@ __GET_CONSOLE_COMMAND__ = ['console-log']
 credentials = []
 
 
+def start_testing(instance_name):
+    out = execute_nova_command(
+        __BOOT_COMMAND__ + ['testing_%s' % instance_name])
+    instance_id = extract_instance_id(out) or 'None'
+    save_log('Tests are running', instance_id)
+
+
 @app.route('/hooker/', methods=['POST'])
 def incoming_notification():
-    event = request.headers['X-Github-Event']
-    signature = request.headers['X-Hub-Signature']
-    if not verify_signature(signature, request.data):
+    if not verify_signature(request):
         return 'Signature verification failed!'
 
-    if event == 'push':
-        info = request.get_json()
-        sha_of_head = info['head_commit']['id']
+    event = request.headers['X-Github-Event']
+    if event != 'push':
+        return 'Ignoring event %s' % event
 
-        out = execute_nova_command(
-            __BOOT_COMMAND__ + ['testing_%s' % sha_of_head])
-        instance_id = extract_instance_id(out) or 'None'
-        save_log('Tests are running', instance_id)
-        return 'Ok. Integration testing started'
+    info = request.get_json()
+    sha_of_head = info['head_commit']['id']
+    start_testing(instance_name=sha_of_head)
+    return 'Ok. Integration testing started'
 
-    return 'Ignoring event %s' % event
+
+@app.route('/docker/', methods=['POST'])
+def incoming_docker_notification():
+    info = request.get_json()
+    if 'push_data' not in info:
+        return 'Ignoring event'
+
+    pushed_at = info['push_data']['pushed_at']
+    start_testing(instance_name=pushed_at)
+    return 'Ok. Integration testing started'
 
 
 @app.route('/logs/', methods=['GET'])
@@ -120,15 +133,22 @@ def extract_instance_id(out):
             return spp[2].strip()
     return None
 
-def verify_signature(signature, data):
+
+def verify_signature(incoming_request):
+    signature = incoming_request.headers['X-Hub-Signature']
     alg, sig = signature.split("=")
     if alg != 'sha1':
         return False
 
     mac = hmac.new(os.environ['GITHUB_SECRET'],
-                   msg=data,
+                   msg=incoming_request.data,
                    digestmod=hashlib.sha1)
-    return sig == mac.hexdigest()
+    if len(mac.hexdigest()) != len(sig):
+        return False
+    result = 0
+    for x, y in zip(sig, mac.hexdigest()):
+        result |= (x != y)
+    return result == 0
 
 
 if __name__ == '__main__':
