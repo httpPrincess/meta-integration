@@ -58,11 +58,11 @@ def incoming_docker_notification():
     pushed_at = info['push_data']['pushed_at']
     start_testing(instance_name=pushed_at)
     callback_url = info['callback_url']
-    print 'callback on: %s' % callback_url
+    app.logger.debug('callback on: %s', callback_url)
     resp = requests.post(callback_url,
                          data={'state': 'success',
                                'description': 'testing started'})
-    return 'Ok. Integration testing started %s' % resp
+    return 'Ok. Integration testing started %s' % resp.text
 
 
 @app.route('/logs/', methods=['GET'])
