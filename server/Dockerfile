@@ -8,4 +8,5 @@ RUN pip install -r /app/requirements.txt
 ADD . /app/
 EXPOSE 7000
 WORKDIR /app/
+VOLUME /app/uploads/
 CMD cd /app/ && ./run.py
