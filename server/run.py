@@ -12,9 +12,9 @@ from werkzeug import secure_filename
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads/'
 app.config['INSTANCE_SCRIPT_NAME'] = 'mysk.sh'
-app.config['NOVA_CREDENTIALS_FILE'] = 'creds.dat'
 app.config.from_envvar('COOPER_SETTINGS', silent=True)
 
+__NOVA_COMMAND__ = ['nova', '--insecure']
 __BOOT_COMMAND__ = ['boot',
                     '--flavor', 'l8',
                     '--image', 'c18c14ff-bb66-4fc2-9085-f08b7c2efe66',
@@ -111,7 +111,7 @@ def save_log(log, instance_id):
 
 
 def execute_nova_command(command):
-    process = Popen(credentials + command, stdout=PIPE)
+    process = Popen(__NOVA_COMMAND__ + command, stdout=PIPE)
     out, err = process.communicate()
     if err:
         app.logger.error('Unable to execute nova command %s [error=%s] %s',
@@ -165,12 +165,8 @@ if __name__ == '__main__':
         app.logger.error('No GitHub hook secret found in environment')
         exit(-1)
 
-    if not os.path.exists(app.config['NOVA_CREDENTIALS_FILE']):
-        app.logger.error('Please provide nova credentials file %s',
-                         app.config['NOVA_CREDENTIALS_FILE'])
+    if 'OS_TENANT_NAME' not in os.environ:
+        app.logger.error('Please provide nova credentials')
         exit(-1)
-
-    with open(app.config['NOVA_CREDENTIALS_FILE']) as f:
-        credentials = json.loads(f.read())
 
     app.run(host='0.0.0.0', port=7000, debug=True)
