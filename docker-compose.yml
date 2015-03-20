@@ -1,5 +1,5 @@
 messaging:
-  image: dockerfile/rabbitmq:latest
+  image: rabbitmq:3
   ports:
    - "5672:5672"
    - "15672:15672"
@@ -22,7 +22,6 @@ worker:
   links:                                                                                                                                                                                                                                                                       
     - db                                                                                                                                                                                                                                                                       
     - messaging                                                                                                                                                                                                                                                                
-#  command: /app/run.py
 worker2:
   image: benedicere/metahosting-dummyworker
   links:
