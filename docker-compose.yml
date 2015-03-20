@@ -1,5 +1,5 @@
 messaging:
-  image: rabbitmq:3
+  image: rabbitmq:3.4
 db:
   image: mongo:latest
   command: --smallfiles
