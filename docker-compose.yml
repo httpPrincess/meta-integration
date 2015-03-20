@@ -1,17 +1,10 @@
 messaging:
   image: rabbitmq:3
-  ports:
-   - "5672:5672"
-   - "15672:15672"
 db:
   image: mongo:latest
   command: --smallfiles
-  ports:
-   - "27017:27017"
 autho:
   image: httpprincess/authorizator:latest
-  ports:
-   - "5000:5000"
 updater:
   image: httpprincess/store-updater:latest
   links:
